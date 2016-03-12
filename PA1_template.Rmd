@@ -1,0 +1,111 @@
+---
+title: "Reproducible Research Project 1"
+author: marcin1213
+output: html_document
+ 
+---
+
+`{r} time`
+
+##Loading and preprocessing the data
+
+
+Read data:
+```{r}
+st <- read.csv("C:/Users/Marcin/Desktop/R/repdata-data-activity/activity.csv", header = TRUE)
+```
+
+Filter out NA values:
+```{r}
+st_cl <- st[!is.na(st$steps),]
+```
+
+Aggregate by date and name columns:
+```{r}
+st_cl_agr <- aggregate(st_cl$steps, by = list(st_cl$date), FUN = "sum" )
+names(st_cl_agr) <- c("date","steps")
+```
+
+##What is mean total number of steps taken per day?
+
+
+
+```{r}
+hist(st_cl_agr$steps, xlab="Number of steps", main = "Histogram: Number of steps")
+```
+
+
+```{r}
+aMean <- mean(st_cl_agr$steps)
+```
+
+
+```{r}
+aMedian <- median(st_cl_agr$steps)
+```
+
+Mean is `r aMean` , median is `r aMedian`
+
+##What is the average daily activity pattern?
+
+Aggregate by interval and name columns:
+```{r}
+st_cl_agr2 <- aggregate(st_cl$steps, by = list(st_cl$interval) , FUN = "mean" )
+names(st_cl_agr2) <- c("interval","steps")
+```
+
+```{r}
+with(st_cl_agr2, plot(interval, steps, type = "l", main = "Sum of steps taken every day"))
+```
+
+```{r}
+paste("The highest value of interval: [", st_cl_agr2[which.max(st_cl_agr2$steps),2], "] for interval [", st_cl_agr2[which.max(st_cl_agr2$steps),1],"]")
+```
+
+##Imputing missing values
+
+```{r}
+NAcount <- length(which(is.na(st$steps)))
+```
+
+Count of missing values is [`r NAcount`]
+
+I choose MEAN values of all steps (skipping NA values) to impute missing values,
+
+```{r}
+st_steps_NA <-  which(is.na(st$steps))
+st_steps_Mean <- mean(st[which(!is.na(st$steps)),"steps"] )
+st[st_steps_NA,"steps"]  <- st_steps_Mean
+st_agr <- aggregate(st$steps, by = list(st$date), FUN = "sum" )
+names(st_agr) <- c("date","steps")
+hist(st_agr$steps, xlab="Number of steps", main = "Histogram: Number of steps (NA values replaced with mean)")
+a1Mean <- mean(st_agr$steps)
+a1Median <- median(st_agr$steps)
+```
+
+```{r, echo=FALSE}
+medianDiff = abs(aMedian - a1Median) / aMedian * 100
+meanDiff = abs(aMean - a1Mean) / aMean * 100
+```
+
+
+New mean is `r a1Mean`  and new median is `r a1Median`
+what gives difference for median `r medianDiff`% and difference for mean `r meanDiff`%.
+
+
+
+##Are there differences in activity patterns between weekdays and weekends?
+
+```{r, echo = FALSE}
+library(ggplot2)
+```
+
+```{r}
+library(ggplot2)
+st$wDay <- ifelse(weekdays(as.Date(st$date)) == c('Samstag','Sonntag'), 'weekend','weekday')
+st_agr_wDay <- aggregate(st$steps, by = list(st$interval, st$wDay), FUN = "sum" )
+names(st_agr_wDay) <- c("interval","WeekDay_Type","steps")
+with(st_agr_wDay, qplot(interval, steps, col = WeekDay_Type, geom = "line"))
+```
+
+
