@@ -2,7 +2,7 @@
 title: "Reproducible Research Project 1"
 author: marcin1213
 output: html_document
-
+ 
 ---
 
 `{r} time`
