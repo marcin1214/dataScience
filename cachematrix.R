@@ -2,7 +2,7 @@
 ## make Cache Function, similar to makeVector
 
 makeCacheMatrix <- function(m = matrix()) {
-    invMatrix <- NULL
+    invMatrix <- NULL fff
     set <- function(y) {
         m <<- y
         invMatrix <<- NULL
